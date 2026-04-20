@@ -5,7 +5,8 @@
       :root{--fs:calc(min(100vw / 120.0, 100vh / 86.0))}
     }
     html,body{height:100vh;width:100vw;background:var(--bg);margin:0;padding:0;
-      font-family:"JetBrains Mono","Courier New",monospace;overflow:hidden}
+      font-family:"JetBrains Mono","Courier New",monospace;overflow:hidden;
+      -webkit-text-size-adjust:100%;text-size-adjust:100%}
     #screen{margin:0;padding:0;width:fit-content;height:fit-content;cursor:default}
     /* Only clickable colors get pointer cursor */
     .c1{cursor:pointer} .c2{cursor:pointer} .cr{cursor:pointer} .cdr{cursor:pointer} .cg{cursor:pointer} .cdg{cursor:pointer}
