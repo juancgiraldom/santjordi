@@ -374,7 +374,10 @@
       }
     }
   });
-  document.getElementById('input-overlay').addEventListener('click',e=>e.stopPropagation());
+  document.getElementById('input-overlay').addEventListener('click',e=>{
+    if(e.target===document.getElementById('input-overlay')) closeOverlay();
+    e.stopPropagation();
+  });
 
   // ── Claude API Key Management ─────────────────────────────────────────────
   window.setClaudeApiKey = function(apiKey) {
@@ -611,26 +614,25 @@
     dissolveRose(()=>startTitleAndFetch(val));
   }
 
-  // Allow ESC key to exit search bar
+  function closeOverlay(){
+    clearInterval(typeTimer);stopAnim();stopHintLoop();
+    clearTimeout(dedicationTimer);dedicationTimer=null;
+    titleOL.clear();sentenceOL.clear();dedicOL.clear();
+    roseOL.clear();activeOverlay=null;
+    document.getElementById('book-input').value='';
+    document.getElementById('input-err').textContent='';
+    buildRoseOverlay();
+    setState('idle');showFrame(0);
+    startTypeLoop(hintPositions(LANG_STRINGS[lang].hint,H-2),80,1200);
+  }
+
   document.addEventListener('keydown',e=>{
-    if(e.key==='Escape' && root.className==='state-input'){
-      setState('idle');
-    }
+    if(e.key==='Escape' && root.className==='state-input') closeOverlay();
   });
-  
+
   document.getElementById('search-btn').addEventListener('click',onSubmit);
   document.getElementById('book-input').addEventListener('keydown',e=>{
     if(e.key==='Enter')onSubmit();
-    if(e.key==='Escape'){
-      clearInterval(typeTimer);stopAnim();stopHintLoop();
-      clearTimeout(dedicationTimer);dedicationTimer=null;
-      titleOL.clear();sentenceOL.clear();dedicOL.clear();
-      roseOL.clear();activeOverlay=null;
-      document.getElementById('book-input').value='';
-      document.getElementById('input-err').textContent='';
-      buildRoseOverlay();
-      setState('idle');showFrame(0);
-      startTypeLoop(hintPositions(LANG_STRINGS[lang].hint,H-2),80,1200);
-    }
+    if(e.key==='Escape') closeOverlay();
   });
 
