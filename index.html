@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ASCII Book Reader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="container" style="width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden">
+    <pre id="screen" aria-label="ASCII book animation"></pre>
+  </div>
+  <div class="input-overlay" id="input-overlay">
+      <span class="overlay-label">what do you want to read?</span>
+      <div class="input-row">
+        <input type="text" id="book-input" placeholder="e.g. Pride and Prejudice"
+               autocomplete="off" spellcheck="false">
+        <button id="search-btn">&#8594;</button>
+      </div>
+      <div class="input-err" id="input-err"></div>
+    </div>
+  <script src="main.js"></script>
+</body>
+</html>
