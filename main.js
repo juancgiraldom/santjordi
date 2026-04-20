@@ -8,7 +8,7 @@
     CAT:{hint:'CLICA PER LLEGIR',label:'que vols llegir?',placeholder:'p.ex. Tirant lo Blanc',
       dedication:["Que aquest Sant Jordi t'ompli de llibres que t'inspirin","i roses que t'alegrin el cor.","Feliç Sant Jordi!"]},
     ESP:{hint:'PULSA PARA LEER',label:'¿qué quieres leer?',placeholder:'ej. Don Quijote',
-      dedication:["Que este Sant Jordi te llene de libros que te inspiren","y rosas que te alegren el corazón.","¡Feliç Sant Jordi!"]},
+      dedication:["Que este Sant Jordi te llene de libros que te inspiren","y rosas que te alegren el corazón.","¡Feliz Sant Jordi!"]},
     ENG:{hint:'CLICK TO READ',label:'what do you want to read?',placeholder:'e.g. Pride and Prejudice',
       dedication:["May this Sant Jordi fill you with books that inspire you","and roses that warm your heart.","Happy Sant Jordi!"]}
   };
