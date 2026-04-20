@@ -2,7 +2,7 @@
     :root{--c0:#585858;--c1:#b2b2b2;--c2:#670000;--c3:#9a9a9a;--bg:#0d0d0d;--fs:calc(max(100vw / 180.0, 100vh / 86.0))}
     /* :root{--c0:#6a0dad;--c1:#ffd700;--c2:#1a56db;--c3:#4b0082;--bg:#0d0d0d;--fs:calc(max(100vw / 180.0, 100vh / 86.0))} */
     @media (max-aspect-ratio: 1/1) {
-      :root{--fs:calc(100vw / 150.0)}
+      :root{--fs:calc(100vw / 100.0)}
     }
     html,body{height:100vh;width:100vw;background:var(--bg);margin:0;padding:0;
       font-family:"JetBrains Mono","Courier New",monospace;overflow:hidden}
