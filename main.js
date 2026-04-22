@@ -333,7 +333,7 @@
         el.href=url;el.download=(_bookTitle||'book')+'_SantJordi.jpg';
         document.body.appendChild(el);el.click();document.body.removeChild(el);
         setTimeout(()=>URL.revokeObjectURL(url),2000);
-        console.log('💾 download_your_book.jpg downloaded');
+        console.log('💾 s downloaded');
       },'image/jpeg',0.92);
     }
   }
@@ -512,7 +512,7 @@
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({title:title,language:lang})
     });
-    if(!resp.ok)throw new Error('API error '+resp.status);
+    if(!resp.ok){const e=await resp.json().catch(()=>({}));throw new Error(e.error||'API error '+resp.status);}
     const data=await resp.json();
     let parsed;
     try{
