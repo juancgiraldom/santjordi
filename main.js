@@ -278,8 +278,8 @@
     const cnv=document.createElement('canvas');
     cnv.width=Math.round(pxW*dpr); cnv.height=Math.round(pxH*dpr);
     const ctx=cnv.getContext('2d');
-    ctx.scale(dpr*xScale,dpr);
-    ctx.fillStyle='#0d0d0d'; ctx.fillRect(0,0,pxW/xScale,pxH);
+    ctx.scale(dpr,dpr);
+    ctx.fillStyle='#0d0d0d'; ctx.fillRect(0,0,pxW,pxH);
     ctx.font=`${efs}px "JetBrains Mono","Courier New",monospace`;
     ctx.textBaseline='top';
     const ov=mergedOverlay();
