@@ -3,6 +3,7 @@
   const N=40,W=200,H=66;
   let binary_rain=false;
   const BINARY_RAIN_DENSITY = 0.2;
+  const MOSAIC_HORIZONTAL = true; // false = stack vertically
   let lang='CAT';
   const LANG_STRINGS={
     CAT:{hint:'CLICA EL LLIBRE',label:'quin és el teu llibre preferit?',loading:"deixa'm buscar-ho a la meva biblioteca de llibres d'una sola pàgina",placeholder:'p.ex. Tirant lo Blanc',
@@ -240,6 +241,91 @@
     document.getElementById('loading-label').textContent=LANG_STRINGS[lang].loading;
     if(hintLoopTimer!==null) startTypeLoop(hintPositions(LANG_STRINGS[lang].hint,H-2),80,1200);
     showFrame(fi);
+  }
+
+  // ── screenshot capture ───────────────────────────────────────────────────
+  const _caps=[];
+  const _COLORS={c0:'#585858',c1:'#b2b2b2',c2:'#670000',c3:'#9a9a9a',
+    ct:'#ffffff',cr:'#e63946',cdr:'#8b0000',cg:'#962f2f',cdg:'#501f1f',
+    'cl-cat':'#670000','cl-esp':'#670000','cl-eng':'#670000',
+    'cl-cat-a':'#ffffff','cl-esp-a':'#ffffff','cl-eng-a':'#ffffff'};
+  const _SP=100;
+  const _TOTAL_COLS=W+2*_SP, _TOTAL_ROWS=86+H+86;
+
+  function _renderToCanvas(){
+    const dpr=window.devicePixelRatio||1;
+    const vw=window.innerWidth,vh=window.innerHeight;
+    const rect=sc.getBoundingClientRect();
+    const charW=rect.width/_TOTAL_COLS, lineH=rect.height/_TOTAL_ROWS;
+    const fontSize=parseFloat(getComputedStyle(sc).fontSize);
+    const cnv=document.createElement('canvas');
+    cnv.width=Math.round(vw*dpr);cnv.height=Math.round(vh*dpr);
+    const ctx=cnv.getContext('2d');
+    ctx.scale(dpr,dpr);
+    ctx.fillStyle='#0d0d0d';ctx.fillRect(0,0,vw,vh);
+    ctx.font=`${fontSize}px "JetBrains Mono","Courier New",monospace`;
+    ctx.textBaseline='top';
+    const ov=mergedOverlay();
+    const zn=ZONES[fi];
+    for(let row=0;row<_TOTAL_ROWS;row++){
+      const y=rect.top+row*lineH;
+      if(y+lineH<0||y>vh) continue;
+      for(let col=0;col<_TOTAL_COLS;col++){
+        const x=rect.left+col*charW;
+        if(x+charW<0||x>vw) continue;
+        let ch=Math.random()<BINARY_RAIN_DENSITY?'1':'0', cls='c0';
+        if(row>=86&&row<86+H&&col>=_SP&&col<_SP+W){
+          const r=row-86,c2=col-_SP,pos=r*W+c2;
+          if(ov&&ov.has(pos)){const o=ov.get(pos);ch=o.ch===' '?' ':o.ch;cls=o.cls||'c0';}
+          else if(zn){cls='c'+(zn[pos]||0);}
+        }
+        ctx.fillStyle=_COLORS[cls]||'#585858';
+        if(ch!==' ') ctx.fillText(ch,x,y);
+      }
+    }
+    return cnv;
+  }
+
+  function _snap(idx){
+    const raw=_renderToCanvas();
+    const dpr=window.devicePixelRatio||1;
+    const frame=Math.round(20*dpr);
+    // center-crop to square
+    const side=raw.height;
+    const cropX=Math.round((raw.width-side)/2);
+    const sq=document.createElement('canvas');
+    sq.width=side;sq.height=side;
+    sq.getContext('2d').drawImage(raw,cropX,0,side,side,0,0,side,side);
+    // white frame
+    const fr=document.createElement('canvas');
+    fr.width=side+2*frame;fr.height=side+2*frame;
+    const fctx=fr.getContext('2d');
+    fctx.fillStyle='#ffffff';fctx.fillRect(0,0,fr.width,fr.height);
+    fctx.drawImage(sq,frame,frame);
+    _caps[idx]=fr;
+    console.log('📸 capture',idx+1,'of 3');
+    if(_caps.filter(Boolean).length===3){
+      const [a,b,c2]=_caps;
+      const TW=MOSAIC_HORIZONTAL?a.width+b.width+c2.width-2*frame:a.width;
+      const TH=MOSAIC_HORIZONTAL?a.height:a.height+b.height+c2.height-2*frame;
+      const out=document.createElement('canvas');
+      out.width=TW;out.height=TH;
+      const ctx=out.getContext('2d');
+      ctx.fillStyle='#ffffff';ctx.fillRect(0,0,TW,TH);
+      if(MOSAIC_HORIZONTAL){
+        ctx.drawImage(a,0,0);ctx.drawImage(b,a.width-frame,0);ctx.drawImage(c2,a.width+b.width-2*frame,0);
+      } else {
+        ctx.drawImage(a,0,0);ctx.drawImage(b,0,a.height-frame);ctx.drawImage(c2,0,a.height+b.height-2*frame);
+      }
+      out.toBlob(blob=>{
+        const url=URL.createObjectURL(blob);
+        const el=document.createElement('a');
+        el.href=url;el.download='santjordi.jpg';
+        document.body.appendChild(el);el.click();document.body.removeChild(el);
+        setTimeout(()=>URL.revokeObjectURL(url),2000);
+        console.log('💾 santjordi.jpg downloaded');
+      },'image/jpeg',0.92);
+    }
   }
 
   buildRoseOverlay();
@@ -491,6 +577,7 @@
               setTimeout(()=>{
                 const dedicationPosList=dedicationPositions();
                 typeChars(dedicOL,dedicationPosList,10,()=>{
+                  _snap(2);
                   setTimeout(()=>{
                     const fadeOutCells=[...dedicOL.keys()].filter(pos=>!roseMap.has(pos)).sort(()=>Math.random()-0.5);
                     let fi=0;
@@ -571,6 +658,7 @@
         setTimeout(()=>{
           typeChars(titleOL,authorPos,50,()=>{
             setTimeout(()=>{
+              _snap(0);
               activeOverlay=null;
               titleOL.clear();
               console.log('📖 Book opening...');
@@ -585,6 +673,7 @@
                 const sentencePos=sentencePositions(apiResult.sentence);
                 typeChars(sentenceOL,sentencePos,20,()=>{
                   console.log('✍️ Sentence finished typing!');
+                  _snap(1);
                   dedicationTimer=setTimeout(()=>{
                     console.log('✨ Sentence dissolving...');
                     // Dissolve sentence text to yellow ceros (like rose dissolve)
