@@ -5,12 +5,12 @@
   const BINARY_RAIN_DENSITY = 0.2;
   let lang='CAT';
   const LANG_STRINGS={
-    CAT:{hint:'CLICA PER LLEGIR',label:'que vols llegir?',placeholder:'p.ex. Tirant lo Blanc',
-      dedication:["Que aquest Sant Jordi t'ompli de llibres que t'inspirin","i roses que t'alegrin el cor.","Feliç Sant Jordi!"]},
-    ESP:{hint:'PULSA PARA LEER',label:'¿qué quieres leer?',placeholder:'ej. Don Quijote',
-      dedication:["Que este Sant Jordi te llene de libros que te inspiren","y rosas que te alegren el corazón.","¡Feliz Sant Jordi!"]},
-    ENG:{hint:'CLICK TO READ',label:'what do you want to read?',placeholder:'e.g. Pride and Prejudice',
-      dedication:["May this Sant Jordi fill you with books that inspire you","and roses that warm your heart.","Happy Sant Jordi!"]}
+    CAT:{hint:'CLICA EL LLIBRE',label:'quin és el teu llibre preferit?',loading:"deixa'm buscar-ho a la meva biblioteca de llibres d'una sola pàgina",placeholder:'p.ex. Tirant lo Blanc',
+      dedication:["Que aquest Sant Jordi t'ompli de llibres que t'inspirin","i roses que t'alegrin el cor.","Feliç Sant Jordi!","","Juan | Juanca | Juan Camilo"]},
+    ESP:{hint:'PULSA EL LIBRO',label:'¿cuál es tu libro favorito?',loading:'déjame buscarlo en mi biblioteca de libros de una sola página',placeholder:'ej. Don Quijote',
+      dedication:["Que este Sant Jordi te llene de libros que te inspiren","y rosas que te alegren el corazón.","¡Feliz Sant Jordi!","","Juan | Juanca | Juan Camilo"]},
+    ENG:{hint:'CLICK THE BOOK',label:'what is your favorite book?',loading:'let me search for that in my one-page-book library',placeholder:'e.g. Pride and Prejudice',
+      dedication:["May this Sant Jordi fill you with books that inspire you","and roses that warm your heart.","Happy Sant Jordi!","","Juan | Juanca | Juan Camilo"]}
   };
   const COVER={"r0": 16, "r1": 58, "c0": 69, "c1": 130};
   const RPAGE={"r0": 18, "r1": 55, "c0": 102, "c1": 157};
@@ -135,12 +135,15 @@
   function buildLangOverlay(){
     langOL.clear();
     const labels=[{text:'CAT',l:'cat'},{text:'ESP',l:'esp'},{text:'ENG',l:'eng'}];
-    const row=3;
+    const row=10;
     const espCol=Math.floor(W/2)-1;
     const cols=[espCol-13,espCol,espCol+13];
     labels.forEach(({text,l},i)=>{
       const cls=l===lang.toLowerCase()?`cl-${l}-a`:`cl-${l}`;
+      const BUFFER=4;
+      for(let b=1;b<=BUFFER;b++) langOL.set(row*W+cols[i]-b,{ch:' ',cls});
       text.split('').forEach((ch,j)=>langOL.set(row*W+cols[i]+j,{ch,cls}));
+      for(let b=0;b<BUFFER;b++) langOL.set(row*W+cols[i]+text.length+b,{ch:' ',cls});
     });
   }
 
@@ -173,7 +176,8 @@
     const hasRose=roseOL.size>0;
     const hasActive=activeOverlay&&activeOverlay.size>0;
     const hasHint=hintOL.size>0;
-    const hasLang=langOL.size>0;
+    const showLang=root.className==='state-idle'||root.className==='state-input';
+    const hasLang=showLang&&langOL.size>0;
     if(!hasRose&&!hasActive&&!hasHint&&!hasLang) return null;
     const m=new Map();
     if(hasLang)   for(const [k,v] of langOL) m.set(k,v);
@@ -233,6 +237,7 @@
     buildLangOverlay();
     document.getElementById('book-input').placeholder=LANG_STRINGS[lang].placeholder;
     document.querySelector('.overlay-label').textContent=LANG_STRINGS[lang].label;
+    document.getElementById('loading-label').textContent=LANG_STRINGS[lang].loading;
     if(hintLoopTimer!==null) startTypeLoop(hintPositions(LANG_STRINGS[lang].hint,H-2),80,1200);
     showFrame(fi);
   }
@@ -338,41 +343,51 @@
     return positions;
   }
 
-  // ── click: language selector (all states) ────────────────────────────────
+  // ── tap handler (touchstart for mobile, click for desktop) ──────────────
   const langClassMap={'cl-cat':'CAT','cl-esp':'ESP','cl-eng':'ENG','cl-cat-a':'CAT','cl-esp-a':'ESP','cl-eng-a':'ENG'};
-  document.getElementById('screen').addEventListener('click',e=>{
-    let el=e.target;
-    while(el&&el!==document.getElementById('screen')){
+  const clickableClasses=['c1','c2','cr','cdr','cg','cdg','ct'];
+  const screen=document.getElementById('screen');
+
+  function handleTap(hit,source){
+    console.log('[tap:'+source+'] hit='+(hit?hit.className||hit.tagName:'null')+' state='+root.className);
+    if(!hit) return false;
+    let el=hit;
+    while(el&&el!==screen){
       for(const [cls,l] of Object.entries(langClassMap)){
-        if(el.classList&&el.classList.contains(cls)){setLang(l);return;}
+        if(el.classList&&el.classList.contains(cls)){
+          console.log('[tap:'+source+'] -> lang '+l);
+          setLang(l);return true;
+        }
       }
       el=el.parentNode;
     }
-  });
-
-  // ── click: idle -> input ─────────────────────────────────────────────────
-  document.getElementById('screen').addEventListener('click',e=>{
     if(root.className==='state-idle'){
-      // Only clickable colors: c1 (yellow), c2 (blue), cr (red), cdr (darkred), cg (green), cdg (darkgreen)
-      const clickableClasses = ['c1','c2','cr','cdr','cg','cdg'];
-      let element = e.target;
-      let isClickable = false;
-      
-      // Check if clicked element or its parent has a clickable color class
-      while(element && element !== document.getElementById('screen')){
-        if(element.classList && clickableClasses.some(cls=>element.classList.contains(cls))){
-          isClickable = true;
-          break;
+      let element=hit;
+      while(element&&element!==screen){
+        if(element.classList&&clickableClasses.some(cls=>element.classList.contains(cls))){
+          console.log('[tap:'+source+'] -> open input class='+element.className);
+          stopHintLoop();
+          setState('input');
+          setTimeout(()=>document.getElementById('book-input').focus(),80);
+          return true;
         }
-        element = element.parentNode;
+        element=element.parentNode;
       }
-      
-      if(isClickable){
-        stopHintLoop();
-        setState('input');
-        setTimeout(()=>document.getElementById('book-input').focus(),80);
-      }
+      console.log('[tap:'+source+'] -> no clickable class found');
     }
+    return false;
+  }
+
+  // touchstart fires before any pending innerHTML rebuild — reliable on iOS
+  screen.addEventListener('touchstart',e=>{
+    const t=e.changedTouches[0];
+    const hit=document.elementFromPoint(t.clientX,t.clientY);
+    if(handleTap(hit,'touch')) e.preventDefault();
+  },{passive:false});
+
+  // click: use e.target directly — always correct for mouse events (no timing gap)
+  screen.addEventListener('click',e=>{
+    handleTap(e.target,'click');
   });
   document.getElementById('input-overlay').addEventListener('click',e=>{
     if(e.target===document.getElementById('input-overlay')) closeOverlay();
@@ -524,7 +539,9 @@
     },INTERVAL);
   }
 
-  function startTitleAndFetch(val){
+  const MIN_LOADING_MS=5000;
+
+  function startTitleAndFetch(val,loadingStart){
     activeOverlay=titleOL;
     titleOL.clear();
     showFrame(0);
@@ -532,6 +549,11 @@
 
     function tryOpenBook(){
       if(!apiResult && !apiError) return;
+      const remaining=Math.max(0,MIN_LOADING_MS-(Date.now()-loadingStart));
+      setTimeout(()=>proceedOpenBook(),remaining);
+    }
+
+    function proceedOpenBook(){
       if(apiError){
         setState('input');
         titleOL.clear();
@@ -542,6 +564,7 @@
         return;
       }
 
+      setState('opening');
       const {titlePos,authorPos}=coverLayout(apiResult.title,apiResult.author);
       titleOL.clear();
       typeChars(titleOL,titlePos,50,()=>{
@@ -551,7 +574,6 @@
               activeOverlay=null;
               titleOL.clear();
               console.log('📖 Book opening...');
-              setState('opening');
               playOnce(()=>{
                 sentenceOL.clear();
                 activeOverlay=sentenceOL;
@@ -560,7 +582,8 @@
                 setState('reading');
                 console.log('📖 Showing book frame');
                 showFrame(N-1);
-                typeChars(sentenceOL,sentencePositions(apiResult.sentence),35,()=>{
+                const sentencePos=sentencePositions(apiResult.sentence);
+                typeChars(sentenceOL,sentencePos,20,()=>{
                   console.log('✍️ Sentence finished typing!');
                   dedicationTimer=setTimeout(()=>{
                     console.log('✨ Sentence dissolving...');
@@ -611,7 +634,8 @@
     if(!val)return;
     document.getElementById('input-err').textContent='';
     setState('loading');
-    dissolveRose(()=>startTitleAndFetch(val));
+    const loadingStart=Date.now();
+    dissolveRose(()=>startTitleAndFetch(val,loadingStart));
   }
 
   function closeOverlay(){

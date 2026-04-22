@@ -23,6 +23,13 @@
       background:#0d0d0de8;flex-direction:column;align-items:center;
       justify-content:center;gap:.75rem;padding:1.5rem;z-index:10}
     .state-input .input-overlay{display:flex}
+    /* loading overlay */
+    .loading-overlay{display:none;position:absolute;inset:0;
+      background:#0d0d0de8;flex-direction:column;align-items:center;
+      justify-content:center;padding:1.5rem;z-index:10}
+    .state-loading .loading-overlay{display:flex}
+    .loading-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--c1);text-align:center;animation:blink 1.4s ease-in-out infinite}
     .overlay-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--c1)}
     .input-row{display:flex;gap:.5rem;width:min(320px,80%)}
     #book-input{flex:1;background:transparent;border:none;border-bottom:1px solid var(--c2);
