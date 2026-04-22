@@ -329,10 +329,10 @@
       out.toBlob(blob=>{
         const url=URL.createObjectURL(blob);
         const el=document.createElement('a');
-        el.href=url;el.download='santjordi.jpg';
+        el.href=url;el.download='download_your_book.jpg';
         document.body.appendChild(el);el.click();document.body.removeChild(el);
         setTimeout(()=>URL.revokeObjectURL(url),2000);
-        console.log('💾 santjordi.jpg downloaded');
+        console.log('💾 download_your_book.jpg downloaded');
       },'image/jpeg',0.92);
     }
   }
