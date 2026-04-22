@@ -245,6 +245,7 @@
 
   // ── screenshot capture ───────────────────────────────────────────────────
   const _caps=[];
+  let _bookTitle='';
   const _COLORS={c0:'#585858',c1:'#b2b2b2',c2:'#670000',c3:'#9a9a9a',
     ct:'#ffffff',cr:'#e63946',cdr:'#8b0000',cg:'#962f2f',cdg:'#501f1f',
     'cl-cat':'#670000','cl-esp':'#670000','cl-eng':'#670000',
@@ -329,7 +330,7 @@
       out.toBlob(blob=>{
         const url=URL.createObjectURL(blob);
         const el=document.createElement('a');
-        el.href=url;el.download='download_your_book.jpg';
+        el.href=url;el.download=(_bookTitle||'book')+'_SantJordi.jpg';
         document.body.appendChild(el);el.click();document.body.removeChild(el);
         setTimeout(()=>URL.revokeObjectURL(url),2000);
         console.log('💾 download_your_book.jpg downloaded');
@@ -661,6 +662,7 @@
       }
 
       setState('opening');
+      _bookTitle=apiResult.title.replace(/\s+/g,'');
       const {titlePos,authorPos}=coverLayout(apiResult.title,apiResult.author);
       titleOL.clear();
       typeChars(titleOL,titlePos,50,()=>{
