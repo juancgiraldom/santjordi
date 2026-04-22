@@ -331,7 +331,7 @@
     const lines=wordWrap(sentence,usableW).slice(0,usableH);
     const totalRows=RPAGE.r1-RPAGE.r0;
     const textRows=lines.length*rowStep;
-    const startR=RPAGE.r0+Math.floor((totalRows-textRows)/2);
+    const startR=Math.max(RPAGE.r0+3*rowStep,RPAGE.r0+Math.floor((totalRows-textRows)/2));
     const startC=RPAGE.c0+margin;
     const positions=[];
     for(let l=0;l<lines.length;l++){
@@ -512,7 +512,7 @@
                         startTypeLoop(hintPositions(LANG_STRINGS[lang].hint,H-2),80,1200);
                       }
                     },FADE_OUT_INTERVAL);
-                  },2000);
+                  },5000);
                 });
               },300);
             }

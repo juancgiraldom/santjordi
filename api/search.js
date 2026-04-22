@@ -36,10 +36,10 @@ export default async function handler(req, res) {
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 450,
-      system: 'You are a literary database. Respond ONLY with valid JSON, no markdown. Format: {"found":true,"title":"...","author":"...","sentence":"..."} or {"found":false,"message":"..."}. The "sentence" field must contain the opening passage of the book: include as many complete sentences as fit within 918 characters (including spaces), ending strictly at the last complete sentence boundary — never mid-sentence. All text fields must be in ' + langName + '.',
+      system: 'You are a literary database. Respond ONLY with valid JSON, no markdown. Format: {"found":true,"title":"...","author":"...","sentence":"..."} or {"found":false,"message":"..."}. The "sentence" field must contain the opening passage of the book: include as many complete sentences as fit within 700 characters (including spaces), ending strictly at the last complete sentence boundary — never mid-sentence. All text fields must be in ' + langName + '.',
       messages: [{
         role: 'user',
-        content: 'Return the opening passage of the book: "' + title + '", translated into ' + langName + '. Fill "sentence" with complete sentences up to 918 characters total (including spaces), cutting at the last complete sentence. Provide the canonical title in ' + langName + ' and the author name. If the book is unknown set found:false.'
+        content: 'Return the opening passage of the book: "' + title + '", translated into ' + langName + '. Fill "sentence" with complete sentences up to 700 characters total (including spaces), cutting at the last complete sentence. Provide the canonical title in ' + langName + ' and the author name. If the book is unknown set found:false.'
       }]
     })
   });
