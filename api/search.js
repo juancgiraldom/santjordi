@@ -18,9 +18,9 @@ export default async function handler(req, res) {
       await fetch(`${redisUrl}/expire/${key}/86400`, { headers });
     }
     if (count > 10) {
-      const msg = language === 'CAT' ? "avui no puc buscar més llibres!"
-                : language === 'ESP' ? "¡hoy no puedo buscar más libros!"
-                : "i can't retrieve more books today!";
+      const msg = language === 'CAT' ? "No puc buscar més llibres per a tu avui. És hora de passejar per Barcelona i els seus carrers, plens de llibres i roses! 🌹📖"
+                : language === 'ESP' ? "No puedo buscar más libros para ti hoy. ¡Es hora de pasear por Barcelona y sus calles, llenas de libros y rosas! 🌹📖"
+                : "I can't search for more books for you today! Time to wander through Barcelona and its streets, blooming with books and roses. 🌹📖";
       return res.status(429).json({ error: msg });
     }
   }
