@@ -1,6 +1,8 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
+  const { title, language } = req.body;
+
   // ── IP rate limit: 10 requests per day ──────────────────────────────────
   const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -16,11 +18,12 @@ export default async function handler(req, res) {
       await fetch(`${redisUrl}/expire/${key}/86400`, { headers });
     }
     if (count > 10) {
-      return res.status(429).json({ error: 'Daily limit reached. Try again tomorrow.' });
+      const msg = language === 'CAT' ? "avui no puc buscar més llibres!"
+                : language === 'ESP' ? "¡hoy no puedo buscar más libros!"
+                : "i can't retrieve more books today!";
+      return res.status(429).json({ error: msg });
     }
   }
-
-  const { title, language } = req.body;
   const apiKey = process.env.CLAUDE_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API key not configured on server.' });
 

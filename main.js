@@ -252,27 +252,42 @@
   const _SP=100;
   const _TOTAL_COLS=W+2*_SP, _TOTAL_ROWS=86+H+86;
 
+  function _shiftView(open){
+    if(window.innerWidth>=window.innerHeight) return;
+    const charW=sc.getBoundingClientRect().width/_TOTAL_COLS;
+    const rightCenterCol=_SP+(RPAGE.c0+RPAGE.c1)/2;
+    const preCenterCol=_TOTAL_COLS/2;
+    const shift=open?-(rightCenterCol-preCenterCol)*charW:0;
+    sc.style.transition=`transform 400ms ease-in-out`;
+    sc.style.transform=`translateX(${shift}px)`;
+  }
+
   function _renderToCanvas(){
     const dpr=window.devicePixelRatio||1;
-    const vw=window.innerWidth,vh=window.innerHeight;
-    const rect=sc.getBoundingClientRect();
-    const charW=rect.width/_TOTAL_COLS, lineH=rect.height/_TOTAL_ROWS;
-    const fontSize=parseFloat(getComputedStyle(sc).fontSize);
+    const SIZE=138;
+    const ROWS=SIZE-40;
+    const startRow=Math.round((_TOTAL_ROWS-SIZE)/2)+Math.round((SIZE-ROWS)/2);
+    const startCol=Math.round((_TOTAL_COLS-SIZE)/2); // 157
+    // Fixed export font — device-independent
+    const efs=24;
+    const tmp=document.createElement('canvas').getContext('2d');
+    tmp.font=`${efs}px "JetBrains Mono","Courier New",monospace`;
+    const ecw=tmp.measureText('0').width;
+    const elh=efs*1;
+    const pxW=Math.round(SIZE*ecw), pxH=Math.round(ROWS*elh);
     const cnv=document.createElement('canvas');
-    cnv.width=Math.round(vw*dpr);cnv.height=Math.round(vh*dpr);
+    cnv.width=Math.round(pxW*dpr); cnv.height=Math.round(pxH*dpr);
     const ctx=cnv.getContext('2d');
-    ctx.scale(dpr,dpr);
-    ctx.fillStyle='#0d0d0d';ctx.fillRect(0,0,vw,vh);
-    ctx.font=`${fontSize}px "JetBrains Mono","Courier New",monospace`;
+    ctx.scale(dpr*xScale,dpr);
+    ctx.fillStyle='#0d0d0d'; ctx.fillRect(0,0,pxW/xScale,pxH);
+    ctx.font=`${efs}px "JetBrains Mono","Courier New",monospace`;
     ctx.textBaseline='top';
     const ov=mergedOverlay();
     const zn=ZONES[fi];
-    for(let row=0;row<_TOTAL_ROWS;row++){
-      const y=rect.top+row*lineH;
-      if(y+lineH<0||y>vh) continue;
-      for(let col=0;col<_TOTAL_COLS;col++){
-        const x=rect.left+col*charW;
-        if(x+charW<0||x>vw) continue;
+    for(let row=startRow;row<startRow+ROWS;row++){
+      const y=(row-startRow)*elh;
+      for(let col=startCol;col<startCol+SIZE;col++){
+        const x=(col-startCol)*ecw;
         let ch=Math.random()<BINARY_RAIN_DENSITY?'1':'0', cls='c0';
         if(row>=86&&row<86+H&&col>=_SP&&col<_SP+W){
           const r=row-86,c2=col-_SP,pos=r*W+c2;
@@ -290,21 +305,15 @@
     const raw=_renderToCanvas();
     const dpr=window.devicePixelRatio||1;
     const frame=Math.round(20*dpr);
-    // center-crop to square
-    const side=raw.height;
-    const cropX=Math.round((raw.width-side)/2);
-    const sq=document.createElement('canvas');
-    sq.width=side;sq.height=side;
-    sq.getContext('2d').drawImage(raw,cropX,0,side,side,0,0,side,side);
     // white frame
     const fr=document.createElement('canvas');
-    fr.width=side+2*frame;fr.height=side+2*frame;
+    fr.width=raw.width+2*frame;fr.height=raw.height+2*frame;
     const fctx=fr.getContext('2d');
     fctx.fillStyle='#ffffff';fctx.fillRect(0,0,fr.width,fr.height);
-    fctx.drawImage(sq,frame,frame);
+    fctx.drawImage(raw,frame,frame);
     _caps[idx]=fr;
     console.log('📸 capture',idx+1,'of 3');
-    if(_caps.filter(Boolean).length===3){
+    if(idx===2){
       const [a,b,c2]=_caps;
       const TW=MOSAIC_HORIZONTAL?a.width+b.width+c2.width-2*frame:a.width;
       const TH=MOSAIC_HORIZONTAL?a.height:a.height+b.height+c2.height-2*frame;
@@ -663,6 +672,7 @@
               titleOL.clear();
               console.log('📖 Book opening...');
               playOnce(()=>{
+                _shiftView(true);
                 sentenceOL.clear();
                 activeOverlay=sentenceOL;
                 console.log('✅ First sentence finished typing!');
@@ -693,6 +703,7 @@
                         let closingFi=N-1;
                         const closeAnim=()=>{
                           if(closingFi<=0){
+                            _shiftView(false);
                             console.log('💝 Dedication appearing...');
                             activeOverlay=null;
                             // showFrame(0);
@@ -728,6 +739,7 @@
   }
 
   function closeOverlay(){
+    sc.style.transition='none';sc.style.transform='';
     clearInterval(typeTimer);stopAnim();stopHintLoop();
     clearTimeout(dedicationTimer);dedicationTimer=null;
     titleOL.clear();sentenceOL.clear();dedicOL.clear();
